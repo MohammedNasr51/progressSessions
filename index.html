@@ -103,6 +103,21 @@
             <label class="radio-card"><input type="radio" name="status" value="great" /><span>✦ Great</span></label>
           </div>
         </div>
+        <section class="comments-panel" id="commentsPanel">
+          <div class="comments-heading">
+            <div><span>SESSION CONVERSATION</span><h3>Comments & feedback</h3></div>
+            <span class="comment-count" id="commentCount">0 comments</span>
+          </div>
+          <div class="comments-list" id="commentsList"></div>
+          <div class="comment-form" id="commentForm">
+            <div class="comment-form-row">
+              <label><span>Your name</span><input id="commentName" maxlength="50" placeholder="Parent or manager name" /></label>
+              <label class="website-field" aria-hidden="true"><span>Website</span><input id="commentWebsite" tabindex="-1" autocomplete="off" /></label>
+            </div>
+            <label><span>Your comment</span><textarea id="commentMessage" rows="3" maxlength="500" placeholder="Share feedback, a question, or encouragement…"></textarea></label>
+            <div class="comment-submit-row"><small>Comments are visible to everyone viewing this session.</small><button class="button button-primary" id="submitComment" type="button">Post comment</button></div>
+          </div>
+        </section>
         <div class="dialog-actions edit-only">
           <button class="button button-danger" id="deleteSession" type="button">Delete</button>
           <span></span>

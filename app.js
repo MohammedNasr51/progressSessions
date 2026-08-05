@@ -8,6 +8,7 @@ const state = {
   sessions: [],
   editingId: null,
   loading: false,
+  viewingId: null,
 };
 
 const els = {
@@ -164,6 +165,7 @@ function openSession(id = null) {
   if (!session && !IS_ADMIN) return;
   if (!session) session = emptySession(displaySessions().length + 1);
   state.editingId = session.placeholder ? null : session.id;
+  state.viewingId = session.placeholder ? null : session.id;
   document.querySelector("#dialogTitle").textContent = IS_ADMIN ? (state.editingId ? `Manage session ${session.number}` : "Add a session") : `Session ${session.number} details`;
   document.querySelector("#sessionId").value = session.id;
   document.querySelector("#sessionNumber").value = session.number;
@@ -174,7 +176,31 @@ function openSession(id = null) {
   if (radio) radio.checked = true;
   els.deleteBtn.style.visibility = IS_ADMIN && state.editingId ? "visible" : "hidden";
   els.form.querySelectorAll("input, textarea").forEach((field) => { field.disabled = !IS_ADMIN; });
+  // Comment fields stay available to viewers even though session fields are read-only.
+  document.querySelector("#commentName").disabled = false;
+  document.querySelector("#commentMessage").disabled = false;
+  document.querySelector("#commentWebsite").disabled = false;
+  renderComments(session);
   els.dialog.showModal();
+}
+
+function formatCommentDate(value) {
+  if (!value) return "Just now";
+  return new Date(value).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+}
+
+function renderComments(session) {
+  const panel = document.querySelector("#commentsPanel");
+  const comments = Array.isArray(session.comments) ? session.comments : [];
+  panel.hidden = Boolean(session.placeholder);
+  document.querySelector("#commentCount").textContent = `${comments.length} comment${comments.length === 1 ? "" : "s"}`;
+  document.querySelector("#commentsList").innerHTML = comments.length
+    ? comments.map((comment) => `<article class="comment-item">
+        <div class="comment-avatar">${escapeHTML(comment.name.charAt(0).toUpperCase())}</div>
+        <div class="comment-body"><div><strong>${escapeHTML(comment.name)}</strong><time>${escapeHTML(formatCommentDate(comment.createdAt))}</time></div><p>${escapeHTML(comment.message)}</p></div>
+        ${IS_ADMIN ? `<button class="delete-comment" type="button" data-comment-id="${escapeHTML(comment.id)}" aria-label="Delete comment">×</button>` : ""}
+      </article>`).join("")
+    : `<div class="comments-empty"><span>♡</span><p>No comments yet. Start the conversation.</p></div>`;
 }
 
 els.form.addEventListener("submit", async (event) => {
@@ -241,6 +267,47 @@ document.querySelector("#keyBtn").addEventListener("click", () => {
   const current = localStorage.getItem(ADMIN_KEY_STORAGE) || "";
   const key = prompt("Set your Deno ADMIN_KEY. It stays in this browser only:", current)?.trim();
   if (key) { localStorage.setItem(ADMIN_KEY_STORAGE, key); showToast("Admin key saved in this browser"); }
+});
+
+document.querySelector("#submitComment").addEventListener("click", async () => {
+  if (!state.viewingId) return;
+  const name = document.querySelector("#commentName").value.trim();
+  const message = document.querySelector("#commentMessage").value.trim();
+  const website = document.querySelector("#commentWebsite").value;
+  if (name.length < 2 || message.length < 2) return showToast("Please enter your name and a comment", true);
+  setLoading(true);
+  try {
+    await apiRequest(`/api/months/${state.currentMonth}/sessions/${encodeURIComponent(state.viewingId)}/comments`, {
+      method: "POST",
+      body: JSON.stringify({ name, message, website }),
+    });
+    document.querySelector("#commentMessage").value = "";
+    await loadMonth();
+    const refreshed = state.sessions.find((session) => session.id === state.viewingId);
+    if (refreshed) renderComments(refreshed);
+    showToast("Your comment is now visible");
+  } catch (error) {
+    showToast(error.message, true);
+  } finally {
+    setLoading(false);
+  }
+});
+
+document.querySelector("#commentsList").addEventListener("click", async (event) => {
+  const button = event.target.closest(".delete-comment");
+  if (!button || !IS_ADMIN || !state.viewingId || !confirm("Delete this viewer comment?")) return;
+  setLoading(true);
+  try {
+    await apiRequest(`/api/months/${state.currentMonth}/sessions/${encodeURIComponent(state.viewingId)}/comments/${encodeURIComponent(button.dataset.commentId)}`, { method: "DELETE", admin: true });
+    await loadMonth();
+    const refreshed = state.sessions.find((session) => session.id === state.viewingId);
+    if (refreshed) renderComments(refreshed);
+    showToast("Comment deleted");
+  } catch (error) {
+    showToast(error.message, true);
+  } finally {
+    setLoading(false);
+  }
 });
 
 document.addEventListener("keydown", (event) => {

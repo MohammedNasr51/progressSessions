@@ -13,6 +13,7 @@ A standalone, responsive session progress tracker designed for GitHub Pages.
 - Printable monthly report
 - Responsive mobile and desktop layout
 - Separate editor and read-only viewer modes
+- Viewer comments and admin comment moderation
 
 ## Public and admin views
 
