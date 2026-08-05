@@ -41,7 +41,10 @@ function formatDate(dateString) {
 
 function render() {
   const sessions = getSessions().slice().sort((a, b) => a.number - b.number);
-  els.monthLabel.textContent = monthDate(state.currentMonth).toLocaleDateString(undefined, { month: "long", year: "numeric" });
+  const formattedMonth = monthDate(state.currentMonth).toLocaleDateString(undefined, { month: "long", year: "numeric" });
+  els.monthLabel.textContent = formattedMonth;
+  document.querySelector("#printMonthLabel").textContent = formattedMonth;
+  document.querySelector("#printDate").textContent = `Printed ${new Date().toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" })}`;
   const completed = sessions.filter(session => session.status !== "upcoming").length;
   const great = sessions.filter(session => session.status === "great").length;
   const target = Math.max(DEFAULT_COUNT, sessions.length);
