@@ -135,7 +135,8 @@ dialog form { padding: 30px; }
 .dialog-head h2 { font-size: 26px; }
 .close-button { border: 0; width: 38px; height: 38px; border-radius: 50%; background: #f2f0f7; font-size: 23px; color: var(--muted); }
 dialog label > span, .status-options > span { display: block; font-size: 11px; font-weight: 800; color: #5b576d; margin-bottom: 7px; }
-dialog input[type="text"], dialog input[type="number"], dialog input[type="date"], dialog textarea { width: 100%; border: 1px solid #d8d4e7; border-radius: 15px; padding: 13px 15px; outline: none; color: var(--ink); background: linear-gradient(145deg, #fff, #faf9fd); box-shadow: inset 0 1px 2px rgba(41,31,83,.035), 0 3px 9px rgba(60,48,110,.035); transition: border-color .2s, box-shadow .2s, background .2s; }
+dialog input:not([type="radio"]):not([type="hidden"]), dialog textarea { width: 100%; min-height: 48px; border: 1px solid #d8d4e7; border-radius: 15px; padding: 13px 15px; outline: none; color: var(--ink); background: linear-gradient(145deg, #fff, #faf9fd); box-shadow: inset 0 1px 2px rgba(41,31,83,.035), 0 3px 9px rgba(60,48,110,.035); transition: border-color .2s, box-shadow .2s, background .2s; }
+dialog textarea { min-height: 94px; }
 dialog input:hover, dialog textarea:hover { border-color: #bbb4dc; background: white; }
 dialog input:focus, dialog textarea:focus { border-color: var(--purple); background: white; box-shadow: 0 0 0 4px rgba(112,92,246,.11), 0 6px 16px rgba(75,58,145,.07); }
 dialog input::placeholder, dialog textarea::placeholder { color: #aaa5b8; }
@@ -207,7 +208,7 @@ dialog form > label { display: block; margin-top: 17px; }
 [data-theme="dark"] .session-card.great { background: linear-gradient(145deg, #4a301e, #2a231f 65%, #5a3820); border-color: #f39a45; }
 [data-theme="dark"] .session-card.completed .session-number, [data-theme="dark"] .session-card.great .session-number { color: white; }
 [data-theme="dark"] .session-date, [data-theme="dark"] .note-preview { color: #aaa5bd; }
-[data-theme="dark"] dialog input[type="text"], [data-theme="dark"] dialog input[type="number"], [data-theme="dark"] dialog input[type="date"], [data-theme="dark"] dialog textarea { color: var(--ink); border-color: #403a55; background: linear-gradient(145deg, #262232, #211e2d); }
+[data-theme="dark"] dialog input:not([type="radio"]):not([type="hidden"]), [data-theme="dark"] dialog textarea { color: var(--ink); border-color: #403a55; background: linear-gradient(145deg, #262232, #211e2d); }
 [data-theme="dark"] dialog input:hover, [data-theme="dark"] dialog textarea:hover, [data-theme="dark"] dialog input:focus, [data-theme="dark"] dialog textarea:focus { background: #292538; border-color: var(--purple); }
 [data-theme="dark"] dialog input:disabled, [data-theme="dark"] dialog textarea:disabled { color: var(--ink); -webkit-text-fill-color: var(--ink); background: #262331; }
 [data-theme="dark"] .radio-card span { border-color: #403a55; color: var(--muted); }

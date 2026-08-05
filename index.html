@@ -101,7 +101,7 @@
           <label><span>Session number</span><input id="sessionNumber" type="number" min="1" required /></label>
           <label><span>Date</span><input id="sessionDate" type="date" /></label>
         </div>
-        <label><span>Session title</span><input id="sessionTitle" maxlength="80" placeholder="e.g. Introduction to fractions" required /></label>
+        <label><span>Session title</span><input id="sessionTitle" type="text" maxlength="80" placeholder="e.g. Introduction to fractions" required /></label>
         <label><span>Notes for parents & manager</span><textarea id="sessionNote" rows="5" maxlength="600" placeholder="What did the student learn? What went well? What should we focus on next?"></textarea></label>
         <div class="status-options">
           <span>How did it go?</span>
@@ -119,8 +119,8 @@
           <div class="comments-list" id="commentsList"></div>
           <div class="comment-form" id="commentForm">
             <div class="comment-form-row">
-              <label><span>Your name</span><input id="commentName" maxlength="50" placeholder="Parent or manager name" /></label>
-              <label class="website-field" aria-hidden="true"><span>Website</span><input id="commentWebsite" tabindex="-1" autocomplete="off" /></label>
+              <label><span>Your name</span><input id="commentName" type="text" maxlength="50" placeholder="Parent or manager name" /></label>
+              <label class="website-field" aria-hidden="true"><span>Website</span><input id="commentWebsite" type="text" tabindex="-1" autocomplete="off" /></label>
             </div>
             <label><span>Your comment</span><textarea id="commentMessage" rows="3" maxlength="500" placeholder="Share feedback, a question, or encouragement…"></textarea></label>
             <div class="comment-submit-row"><small>Comments are visible to everyone viewing this session.</small><button class="button button-primary" id="submitComment" type="button">Post comment</button></div>
