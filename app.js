@@ -1,5 +1,6 @@
 const API_BASE = "https://progresssessionbackend.mohamednasr.deno.net";
 const ADMIN_KEY_STORAGE = "brightpath-api-admin-key";
+const THEME_STORAGE = "brightpath-theme";
 const DEFAULT_COUNT = 8;
 const IS_ADMIN = new URLSearchParams(location.search).has("admin");
 
@@ -263,6 +264,12 @@ document.querySelector("#addSessionBtn").addEventListener("click", () => openSes
 document.querySelector("#closeDialog").addEventListener("click", () => els.dialog.close());
 document.querySelector("#cancelDialog").addEventListener("click", () => els.dialog.close());
 document.querySelector("#printBtn").addEventListener("click", () => window.print());
+document.querySelector("#themeBtn").addEventListener("click", () => {
+  const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  document.documentElement.dataset.theme = next;
+  localStorage.setItem(THEME_STORAGE, next);
+  showToast(`${next === "dark" ? "Dark" : "Light"} theme enabled`);
+});
 document.querySelector("#keyBtn").addEventListener("click", () => {
   const current = localStorage.getItem(ADMIN_KEY_STORAGE) || "";
   const key = prompt("Set your Deno ADMIN_KEY. It stays in this browser only:", current)?.trim();

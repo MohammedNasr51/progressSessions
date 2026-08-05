@@ -7,6 +7,13 @@
     <meta name="description" content="A colorful monthly student session progress tracker." />
     <title>BrightPath — Session Progress</title>
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <script>
+      (() => {
+        const saved = localStorage.getItem("brightpath-theme");
+        const theme = saved || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
@@ -21,6 +28,7 @@
         <span class="brand-mark">B</span>
         <span><strong>BrightPath</strong><small>Session Progress</small></span>
       </a>
+      <button class="theme-toggle" id="themeBtn" type="button" aria-label="Switch color theme" title="Switch color theme"><span class="theme-icon"></span></button>
       <span class="view-badge" id="viewBadge">Viewer report</span>
       <div class="header-actions">
         <button class="icon-button edit-only" id="keyBtn" title="Set admin key" aria-label="Set admin key"><span>⌘</span></button>
