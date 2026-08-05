@@ -86,17 +86,18 @@ h1 span { color: var(--purple); position: relative; }
 .session-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
 .session-card { min-height: 220px; border-radius: 19px; border: 1px solid var(--line); background: white; padding: 19px; display: flex; flex-direction: column; cursor: pointer; transition: .24s ease; position: relative; overflow: hidden; }
 .session-card:hover { transform: translateY(-5px); border-color: #cfc8fb; box-shadow: 0 15px 30px rgba(70,55,140,.10); }
-.session-card.completed, .session-card.great { background: linear-gradient(155deg, #fff, #f8f6ff); }
+.session-card.completed { background: linear-gradient(145deg, #f0edff 0%, #faf9ff 62%, #e9e4ff 100%); border: 2px solid #8b7af6; box-shadow: 0 10px 24px rgba(112,92,246,.15); }
+.session-card.great { background: linear-gradient(145deg, #fff0dc 0%, #fffaf3 62%, #ffe3c2 100%); border: 2px solid #ff9f43; box-shadow: 0 10px 24px rgba(255,159,67,.17); }
 .session-card::after { content: ""; position: absolute; inset: 0 auto auto 0; width: 100%; height: 4px; background: #e6e3ef; }
 .session-card.completed::after { background: var(--purple); }
 .session-card.great::after { background: var(--orange); }
 .session-top { display: flex; align-items: center; justify-content: space-between; }
 .session-number { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 11px; background: #f1eff8; color: var(--muted); font-weight: 800; font-size: 13px; }
-.completed .session-number { color: var(--purple); background: var(--purple-pale); }
-.great .session-number { color: #dd781c; background: var(--orange-pale); }
+.completed .session-number { color: white; background: linear-gradient(145deg, #806dfd, #5942df); box-shadow: 0 6px 14px rgba(112,92,246,.25); }
+.great .session-number { color: white; background: linear-gradient(145deg, #ffb35f, #ee7f28); box-shadow: 0 6px 14px rgba(255,159,67,.26); }
 .status-badge { font-size: 10px; font-weight: 800; padding: 6px 9px; border-radius: 99px; background: #f3f2f7; color: #9691a6; text-transform: uppercase; letter-spacing: .6px; }
-.completed .status-badge { color: var(--purple-dark); background: var(--purple-pale); }
-.great .status-badge { color: #c96c18; background: var(--orange-pale); }
+.completed .status-badge { color: white; background: var(--purple); box-shadow: 0 4px 10px rgba(112,92,246,.2); }
+.great .status-badge { color: white; background: var(--orange); box-shadow: 0 4px 10px rgba(255,159,67,.22); }
 .session-card h3 { font: 800 16px/1.35 Manrope; letter-spacing: -.3px; margin: 18px 0 7px; }
 .session-date { color: var(--muted); font-size: 12px; margin: 0; }
 .note-preview { color: #797489; font-size: 12px; line-height: 1.5; margin: 16px 0 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -106,15 +107,18 @@ footer { padding: 28px 3px 38px; display: flex; justify-content: space-between; 
 footer button { border: 0; background: transparent; color: var(--purple); font-weight: 800; }
 .print-report-label, .print-footer { display: none; }
 
-dialog { border: 0; padding: 0; border-radius: 24px; width: min(620px, calc(100% - 32px)); color: var(--ink); box-shadow: 0 30px 90px rgba(25,18,62,.28); }
+dialog { border: 0; padding: 0; border-radius: 26px; width: min(680px, calc(100% - 32px)); max-height: calc(100dvh - 32px); overflow-y: auto; scrollbar-width: none; color: var(--ink); box-shadow: 0 30px 90px rgba(25,18,62,.28); }
+dialog::-webkit-scrollbar, .comments-list::-webkit-scrollbar { display: none; }
 dialog::backdrop { background: rgba(25,20,48,.56); backdrop-filter: blur(6px); }
 dialog form { padding: 30px; }
 .dialog-head { display: flex; justify-content: space-between; margin-bottom: 25px; }
 .dialog-head h2 { font-size: 26px; }
 .close-button { border: 0; width: 38px; height: 38px; border-radius: 50%; background: #f2f0f7; font-size: 23px; color: var(--muted); }
 dialog label > span, .status-options > span { display: block; font-size: 11px; font-weight: 800; color: #5b576d; margin-bottom: 7px; }
-dialog input[type="text"], dialog input[type="number"], dialog input[type="date"], dialog textarea { width: 100%; border: 1px solid #dedbe8; border-radius: 12px; padding: 12px 13px; outline: none; color: var(--ink); background: #fcfbfe; transition: .2s; }
-dialog input:focus, dialog textarea:focus { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(112,92,246,.1); }
+dialog input[type="text"], dialog input[type="number"], dialog input[type="date"], dialog textarea { width: 100%; border: 1px solid #d8d4e7; border-radius: 15px; padding: 13px 15px; outline: none; color: var(--ink); background: linear-gradient(145deg, #fff, #faf9fd); box-shadow: inset 0 1px 2px rgba(41,31,83,.035), 0 3px 9px rgba(60,48,110,.035); transition: border-color .2s, box-shadow .2s, background .2s; }
+dialog input:hover, dialog textarea:hover { border-color: #bbb4dc; background: white; }
+dialog input:focus, dialog textarea:focus { border-color: var(--purple); background: white; box-shadow: 0 0 0 4px rgba(112,92,246,.11), 0 6px 16px rgba(75,58,145,.07); }
+dialog input::placeholder, dialog textarea::placeholder { color: #aaa5b8; }
 dialog input:disabled, dialog textarea:disabled { opacity: 1; color: var(--ink); -webkit-text-fill-color: var(--ink); background: #f8f7fc; cursor: default; }
 .view-mode dialog input[type="number"] { font-weight: 800; color: var(--purple-dark); }
 .view-mode .radio-card input:disabled + span { opacity: .48; cursor: default; }
@@ -134,7 +138,7 @@ dialog form > label { display: block; margin-top: 17px; }
 .comments-heading > div > span { color: var(--purple); font-size: 8px; letter-spacing: 1.3px; font-weight: 800; }
 .comments-heading h3 { margin: 2px 0 0; font: 800 17px Manrope; }
 .comment-count { padding: 5px 8px; border-radius: 99px; color: var(--muted); background: #f1eff7; font-size: 9px; font-weight: 800; }
-.comments-list { display: grid; gap: 8px; margin: 13px 0; max-height: 230px; overflow: auto; }
+.comments-list { display: grid; gap: 8px; margin: 13px 0; max-height: 230px; overflow: auto; scrollbar-width: none; }
 .comment-item { display: grid; grid-template-columns: 32px 1fr auto; gap: 9px; padding: 11px; border: 1px solid var(--line); border-radius: 12px; background: #fbfaff; }
 .comment-avatar { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 10px; color: white; background: linear-gradient(145deg, var(--purple), var(--purple-dark)); font-weight: 800; }
 .comment-body strong { font-size: 11px; }

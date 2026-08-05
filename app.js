@@ -148,7 +148,7 @@ function sessionCard(session) {
   const title = session.title || (IS_ADMIN ? "Add session details" : "Session coming soon");
   const action = session.note ? "VIEW NOTES" : IS_ADMIN ? "ADD DETAILS" : "VIEW DETAILS";
   return `<article class="session-card ${session.status} ${session.placeholder ? "placeholder" : ""}" data-id="${session.id}" tabindex="0" role="button" aria-label="${IS_ADMIN ? "Manage" : "View"} session ${session.number}">
-    <div class="session-top"><span class="session-number">${session.status === "upcoming" ? session.number : "✓"}</span><span class="status-badge">${label}</span></div>
+    <div class="session-top"><span class="session-number">${session.number}</span><span class="status-badge">${session.status === "upcoming" ? "◷" : session.status === "great" ? "★" : "✓"} ${label}</span></div>
     <h3 class="${session.title ? "" : "empty-title"}">${escapeHTML(title)}</h3>
     <p class="session-date">${escapeHTML(formatDate(session.date))}</p>
     ${session.note ? `<p class="note-preview">${escapeHTML(session.note)}</p>` : ""}
