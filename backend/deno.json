@@ -1,0 +1,9 @@
+{
+  "nodeModulesDir": "auto",
+  "tasks": {
+    "dev": "deno run --watch --allow-env --allow-net src/server.js",
+    "start": "deno run --allow-env --allow-net src/server.js",
+    "check": "deno check src/server.js",
+    "test": "deno test --allow-env"
+  }
+}

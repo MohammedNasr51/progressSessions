@@ -1,0 +1,21 @@
+{
+  "name": "brightpath-progress-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared session progress API for BrightPath",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "check": "node --check src/server.js && node --check src/app.js && node --check src/db.js",
+    "test": "node test/validation.test.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "mongodb": "^6.17.0"
+  }
+}
