@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="8" y1="5" x2="56" y2="59" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8B78FF"/>
+      <stop offset="0.58" stop-color="#6852ED"/>
+      <stop offset="1" stop-color="#4F38D1"/>
+    </linearGradient>
+    <linearGradient id="spark" x1="43" y1="9" x2="55" y2="23" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFD76A"/>
+      <stop offset="1" stop-color="#FF9F43"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#302180" flood-opacity=".28"/>
+    </filter>
+  </defs>
+  <rect x="5" y="5" width="54" height="54" rx="17" fill="url(#bg)" filter="url(#shadow)"/>
+  <path d="M24 17.5h10.2c7 0 11.2 3.2 11.2 8.2 0 3.1-1.7 5.5-4.5 6.8 3.7 1.1 5.8 3.8 5.8 7.3 0 5.5-4.5 9-12.2 9H24V17.5Zm9.5 12.3c3 0 4.7-1.1 4.7-3.2 0-2-1.6-3-4.7-3h-2.4v6.2h2.4Zm.6 12.8c3.5 0 5.3-1.2 5.3-3.5 0-2.2-1.8-3.4-5.3-3.4h-3v6.9h3Z" fill="white"/>
+  <path d="m49.5 8.8 1.6 4.1 4.1 1.6-4.1 1.6-1.6 4.1-1.6-4.1-4.1-1.6 4.1-1.6 1.6-4.1Z" fill="url(#spark)"/>
+</svg>
