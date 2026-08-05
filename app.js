@@ -1,40 +1,117 @@
-const STORAGE_KEY = "brightpath-session-progress-v1";
+const API_BASE = "https://progresssessionbackend.mohamednasr.deno.net";
+const ADMIN_KEY_STORAGE = "brightpath-api-admin-key";
 const DEFAULT_COUNT = 8;
-const IS_EDITOR = localStorage.getItem("boss") === "monasr";
+const IS_ADMIN = new URLSearchParams(location.search).has("admin");
 
 const state = {
   currentMonth: monthKey(new Date()),
-  data: loadData(),
-  editingId: null
+  sessions: [],
+  editingId: null,
+  loading: false,
 };
-
-document.body.classList.toggle("view-mode", !IS_EDITOR);
-document.body.classList.toggle("edit-mode", IS_EDITOR);
 
 const els = {
-  monthLabel: document.querySelector("#monthLabel"), sessionGrid: document.querySelector("#sessionGrid"),
-  completedCount: document.querySelector("#completedCount"), greatCount: document.querySelector("#greatCount"),
-  percentText: document.querySelector("#percentText"), miniRing: document.querySelector("#miniRing"), progressBar: document.querySelector("#progressBar"),
-  dialog: document.querySelector("#sessionDialog"), form: document.querySelector("#sessionForm"), deleteBtn: document.querySelector("#deleteSession"),
-  toast: document.querySelector("#toast")
+  monthLabel: document.querySelector("#monthLabel"),
+  sessionGrid: document.querySelector("#sessionGrid"),
+  completedCount: document.querySelector("#completedCount"),
+  greatCount: document.querySelector("#greatCount"),
+  percentText: document.querySelector("#percentText"),
+  miniRing: document.querySelector("#miniRing"),
+  progressBar: document.querySelector("#progressBar"),
+  dialog: document.querySelector("#sessionDialog"),
+  form: document.querySelector("#sessionForm"),
+  deleteBtn: document.querySelector("#deleteSession"),
+  toast: document.querySelector("#toast"),
+  loadingBar: document.querySelector("#loadingBar"),
+  viewBadge: document.querySelector("#viewBadge"),
 };
 
-function monthKey(date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`; }
-function monthDate(key) { const [year, month] = key.split("-").map(Number); return new Date(year, month - 1, 1); }
-function uid() { return `${Date.now()}-${Math.random().toString(16).slice(2)}`; }
-function escapeHTML(value = "") { const node = document.createElement("div"); node.textContent = value; return node.innerHTML; }
+document.body.classList.toggle("view-mode", !IS_ADMIN);
+document.body.classList.toggle("edit-mode", IS_ADMIN);
+els.viewBadge.textContent = IS_ADMIN ? "Admin dashboard" : "Live viewer report";
+document.title = IS_ADMIN ? "BrightPath — Admin Dashboard" : "BrightPath — Session Progress";
 
-function loadData() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
-  catch { return {}; }
+function monthKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 }
-function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data)); }
-function getSessions() {
-  if (!state.data[state.currentMonth]) {
-    state.data[state.currentMonth] = Array.from({ length: DEFAULT_COUNT }, (_, index) => ({ id: uid(), number: index + 1, title: "", date: "", note: "", status: "upcoming" }));
-    saveData();
+
+function monthDate(key) {
+  const [year, month] = key.split("-").map(Number);
+  return new Date(year, month - 1, 1);
+}
+
+function uid() {
+  return globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function escapeHTML(value = "") {
+  const node = document.createElement("div");
+  node.textContent = value;
+  return node.innerHTML;
+}
+
+function emptySession(number) {
+  return { id: uid(), number, title: "", date: "", note: "", status: "upcoming", placeholder: true };
+}
+
+function displaySessions() {
+  if (state.sessions.length >= DEFAULT_COUNT) return state.sessions.slice().sort((a, b) => a.number - b.number);
+  const usedNumbers = new Set(state.sessions.map((session) => session.number));
+  const placeholders = [];
+  for (let number = 1; number <= DEFAULT_COUNT; number += 1) {
+    if (!usedNumbers.has(number)) placeholders.push(emptySession(number));
   }
-  return state.data[state.currentMonth];
+  return [...state.sessions, ...placeholders].sort((a, b) => a.number - b.number);
+}
+
+function setLoading(value) {
+  state.loading = value;
+  els.loadingBar.classList.toggle("active", value);
+  document.body.classList.toggle("is-loading", value);
+}
+
+function getAdminKey({ promptIfMissing = true } = {}) {
+  let key = localStorage.getItem(ADMIN_KEY_STORAGE) || "";
+  if (!key && promptIfMissing) {
+    key = prompt("Enter the ADMIN_KEY you configured in Deno Deploy:")?.trim() || "";
+    if (key) localStorage.setItem(ADMIN_KEY_STORAGE, key);
+  }
+  return key;
+}
+
+async function apiRequest(path, options = {}) {
+  const headers = { Accept: "application/json", ...(options.headers || {}) };
+  if (options.body) headers["Content-Type"] = "application/json";
+  if (options.admin) {
+    const key = getAdminKey();
+    if (!key) throw new Error("Admin key is required");
+    headers["X-Admin-Key"] = key;
+  }
+  const response = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  if (response.status === 401) {
+    localStorage.removeItem(ADMIN_KEY_STORAGE);
+    throw new Error("The admin key is incorrect. Set it again and retry.");
+  }
+  if (!response.ok) {
+    const payload = await response.json().catch(() => ({}));
+    throw new Error(payload.details?.join("\n") || payload.error || `Request failed (${response.status})`);
+  }
+  return response.status === 204 ? null : response.json();
+}
+
+async function loadMonth() {
+  setLoading(true);
+  try {
+    const payload = await apiRequest(`/api/months/${state.currentMonth}/sessions`);
+    state.sessions = Array.isArray(payload.sessions) ? payload.sessions : [];
+    render();
+  } catch (error) {
+    state.sessions = [];
+    render();
+    showToast(`Could not load sessions: ${error.message}`, true);
+  } finally {
+    setLoading(false);
+  }
 }
 
 function formatDate(dateString) {
@@ -44,43 +121,50 @@ function formatDate(dateString) {
 }
 
 function render() {
-  const sessions = getSessions().slice().sort((a, b) => a.number - b.number);
+  const sessions = displaySessions();
   const formattedMonth = monthDate(state.currentMonth).toLocaleDateString(undefined, { month: "long", year: "numeric" });
   els.monthLabel.textContent = formattedMonth;
   document.querySelector("#printMonthLabel").textContent = formattedMonth;
   document.querySelector("#printDate").textContent = `Printed ${new Date().toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" })}`;
-  const completed = sessions.filter(session => session.status !== "upcoming").length;
-  const great = sessions.filter(session => session.status === "great").length;
-  const target = Math.max(DEFAULT_COUNT, sessions.length);
-  const percent = Math.min(100, Math.round((completed / target) * 100));
+
+  const savedSessions = state.sessions;
+  const completed = savedSessions.filter((session) => session.status !== "upcoming").length;
+  const great = savedSessions.filter((session) => session.status === "great").length;
+  const percent = Math.min(100, Math.round((completed / DEFAULT_COUNT) * 100));
   els.completedCount.textContent = completed;
   els.greatCount.textContent = great;
   els.percentText.textContent = `${percent}%`;
   els.miniRing.style.setProperty("--percent", `${percent}%`);
   els.progressBar.style.width = `${percent}%`;
   els.sessionGrid.innerHTML = sessions.map(sessionCard).join("");
-  document.querySelectorAll(".session-card").forEach(card => card.addEventListener("click", () => openEditor(card.dataset.id)));
+  document.querySelectorAll(".session-card").forEach((card) => {
+    card.addEventListener("click", () => openSession(card.dataset.id));
+  });
 }
 
 function sessionCard(session) {
   const label = session.status === "great" ? "Great" : session.status === "completed" ? "Completed" : "Upcoming";
-  const title = session.title || "Add session details";
-  return `<article class="session-card ${session.status}" data-id="${session.id}" tabindex="0" role="button" aria-label="Edit session ${session.number}">
+  const title = session.title || (IS_ADMIN ? "Add session details" : "Session coming soon");
+  const action = session.note ? "VIEW NOTES" : IS_ADMIN ? "ADD DETAILS" : "VIEW DETAILS";
+  return `<article class="session-card ${session.status} ${session.placeholder ? "placeholder" : ""}" data-id="${session.id}" tabindex="0" role="button" aria-label="${IS_ADMIN ? "Manage" : "View"} session ${session.number}">
     <div class="session-top"><span class="session-number">${session.status === "upcoming" ? session.number : "✓"}</span><span class="status-badge">${label}</span></div>
     <h3 class="${session.title ? "" : "empty-title"}">${escapeHTML(title)}</h3>
     <p class="session-date">${escapeHTML(formatDate(session.date))}</p>
     ${session.note ? `<p class="note-preview">${escapeHTML(session.note)}</p>` : ""}
-    <div class="card-footer"><span>${session.note ? "VIEW NOTES" : "ADD DETAILS"}</span><span>→</span></div>
+    <div class="card-footer"><span>${action}</span><span>→</span></div>
   </article>`;
 }
 
-function openEditor(id = null) {
-  const sessions = getSessions();
-  let session = sessions.find(item => item.id === id);
-  if (!IS_EDITOR && !session) return;
-  if (!session) session = { id: "", number: sessions.length + 1, title: "", date: "", note: "", status: "upcoming" };
-  state.editingId = session.id || null;
-  document.querySelector("#dialogTitle").textContent = IS_EDITOR ? (state.editingId ? `Session ${session.number}` : "Add a session") : `Session ${session.number} details`;
+function findDisplaySession(id) {
+  return displaySessions().find((session) => session.id === id);
+}
+
+function openSession(id = null) {
+  let session = findDisplaySession(id);
+  if (!session && !IS_ADMIN) return;
+  if (!session) session = emptySession(displaySessions().length + 1);
+  state.editingId = session.placeholder ? null : session.id;
+  document.querySelector("#dialogTitle").textContent = IS_ADMIN ? (state.editingId ? `Manage session ${session.number}` : "Add a session") : `Session ${session.number} details`;
   document.querySelector("#sessionId").value = session.id;
   document.querySelector("#sessionNumber").value = session.number;
   document.querySelector("#sessionTitle").value = session.title;
@@ -88,59 +172,108 @@ function openEditor(id = null) {
   document.querySelector("#sessionNote").value = session.note;
   const radio = document.querySelector(`input[name="status"][value="${session.status}"]`);
   if (radio) radio.checked = true;
-  els.deleteBtn.style.visibility = state.editingId ? "visible" : "hidden";
-  els.form.querySelectorAll("input, textarea").forEach(field => field.disabled = !IS_EDITOR);
+  els.deleteBtn.style.visibility = IS_ADMIN && state.editingId ? "visible" : "hidden";
+  els.form.querySelectorAll("input, textarea").forEach((field) => { field.disabled = !IS_ADMIN; });
   els.dialog.showModal();
 }
 
-els.form.addEventListener("submit", event => {
+els.form.addEventListener("submit", async (event) => {
   event.preventDefault();
-  if (!IS_EDITOR) return;
-  const sessions = getSessions();
+  if (!IS_ADMIN) return;
   const record = {
-    id: state.editingId || uid(),
+    id: state.editingId || document.querySelector("#sessionId").value || uid(),
     number: Number(document.querySelector("#sessionNumber").value),
     title: document.querySelector("#sessionTitle").value.trim(),
     date: document.querySelector("#sessionDate").value,
     note: document.querySelector("#sessionNote").value.trim(),
-    status: document.querySelector('input[name="status"]:checked')?.value || "upcoming"
+    status: document.querySelector('input[name="status"]:checked')?.value || "upcoming",
   };
-  const index = sessions.findIndex(item => item.id === state.editingId);
-  if (index >= 0) sessions[index] = record; else sessions.push(record);
-  saveData(); render(); els.dialog.close(); showToast("Session saved successfully");
+  setLoading(true);
+  try {
+    await apiRequest(`/api/months/${state.currentMonth}/sessions/${encodeURIComponent(record.id)}`, { method: "PUT", admin: true, body: JSON.stringify(record) });
+    els.dialog.close();
+    await loadMonth();
+    showToast("Session saved to the shared database");
+  } catch (error) {
+    showToast(error.message, true);
+  } finally {
+    setLoading(false);
+  }
 });
 
-els.deleteBtn.addEventListener("click", () => {
-  if (!IS_EDITOR) return;
-  if (!state.editingId || !confirm("Delete this session?")) return;
-  state.data[state.currentMonth] = getSessions().filter(item => item.id !== state.editingId);
-  saveData(); render(); els.dialog.close(); showToast("Session deleted");
+els.deleteBtn.addEventListener("click", async () => {
+  if (!IS_ADMIN || !state.editingId || !confirm("Delete this session for everyone?")) return;
+  setLoading(true);
+  try {
+    await apiRequest(`/api/months/${state.currentMonth}/sessions/${encodeURIComponent(state.editingId)}`, { method: "DELETE", admin: true });
+    els.dialog.close();
+    await loadMonth();
+    showToast("Session deleted");
+  } catch (error) {
+    showToast(error.message, true);
+  } finally {
+    setLoading(false);
+  }
 });
 
-function changeMonth(amount) {
-  const date = monthDate(state.currentMonth); date.setMonth(date.getMonth() + amount); state.currentMonth = monthKey(date); render();
+async function changeMonth(amount) {
+  const date = monthDate(state.currentMonth);
+  date.setMonth(date.getMonth() + amount);
+  state.currentMonth = monthKey(date);
+  await loadMonth();
 }
-function showToast(message) { els.toast.textContent = message; els.toast.classList.add("show"); setTimeout(() => els.toast.classList.remove("show"), 2200); }
+
+function showToast(message, isError = false) {
+  els.toast.textContent = message;
+  els.toast.classList.toggle("error", isError);
+  els.toast.classList.add("show");
+  clearTimeout(showToast.timer);
+  showToast.timer = setTimeout(() => els.toast.classList.remove("show"), 3200);
+}
 
 document.querySelector("#prevMonth").addEventListener("click", () => changeMonth(-1));
 document.querySelector("#nextMonth").addEventListener("click", () => changeMonth(1));
-document.querySelector("#addSessionBtn").addEventListener("click", () => openEditor());
+document.querySelector("#addSessionBtn").addEventListener("click", () => openSession());
 document.querySelector("#closeDialog").addEventListener("click", () => els.dialog.close());
 document.querySelector("#cancelDialog").addEventListener("click", () => els.dialog.close());
 document.querySelector("#printBtn").addEventListener("click", () => window.print());
-document.addEventListener("keydown", event => { if (event.key === "Enter" && document.activeElement?.classList.contains("session-card")) openEditor(document.activeElement.dataset.id); });
+document.querySelector("#keyBtn").addEventListener("click", () => {
+  const current = localStorage.getItem(ADMIN_KEY_STORAGE) || "";
+  const key = prompt("Set your Deno ADMIN_KEY. It stays in this browser only:", current)?.trim();
+  if (key) { localStorage.setItem(ADMIN_KEY_STORAGE, key); showToast("Admin key saved in this browser"); }
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && document.activeElement?.classList.contains("session-card")) openSession(document.activeElement.dataset.id);
+});
 
 document.querySelector("#exportBtn").addEventListener("click", () => {
-  if (!IS_EDITOR) return;
-  const blob = new Blob([JSON.stringify(state.data, null, 2)], { type: "application/json" });
-  const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `brightpath-backup-${monthKey(new Date())}.json`; link.click(); URL.revokeObjectURL(link.href); showToast("Backup exported");
+  if (!IS_ADMIN) return;
+  const blob = new Blob([JSON.stringify({ [state.currentMonth]: state.sessions }, null, 2)], { type: "application/json" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `brightpath-${state.currentMonth}.json`;
+  link.click();
+  URL.revokeObjectURL(link.href);
 });
-document.querySelector("#importInput").addEventListener("change", async event => {
-  if (!IS_EDITOR) return;
-  const file = event.target.files[0]; if (!file) return;
-  try { const imported = JSON.parse(await file.text()); if (!imported || Array.isArray(imported) || typeof imported !== "object") throw new Error(); state.data = imported; saveData(); render(); showToast("Backup imported"); }
-  catch { alert("That file is not a valid BrightPath backup."); }
+
+document.querySelector("#importInput").addEventListener("change", async (event) => {
+  if (!IS_ADMIN) return;
+  const file = event.target.files[0];
+  if (!file) return;
+  try {
+    const imported = JSON.parse(await file.text());
+    const sessions = Array.isArray(imported) ? imported : imported[state.currentMonth];
+    if (!Array.isArray(sessions)) throw new Error("This backup has no sessions for the selected month");
+    await apiRequest(`/api/months/${state.currentMonth}/sessions`, { method: "PUT", admin: true, body: JSON.stringify({ sessions }) });
+    await loadMonth();
+    showToast("Month imported to the shared database");
+  } catch (error) {
+    showToast(error.message, true);
+  }
   event.target.value = "";
 });
 
 render();
+loadMonth();
+if (IS_ADMIN && !getAdminKey({ promptIfMissing: false })) setTimeout(() => getAdminKey(), 350);

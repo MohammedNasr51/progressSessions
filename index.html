@@ -21,8 +21,9 @@
         <span class="brand-mark">B</span>
         <span><strong>BrightPath</strong><small>Session Progress</small></span>
       </a>
-      <span class="view-badge" id="viewBadge">View-only report</span>
+      <span class="view-badge" id="viewBadge">Viewer report</span>
       <div class="header-actions">
+        <button class="icon-button edit-only" id="keyBtn" title="Set admin key" aria-label="Set admin key"><span>⌘</span></button>
         <button class="icon-button" id="exportBtn" title="Export a backup" aria-label="Export a backup">
           <span>⇩</span>
         </button>
@@ -112,6 +113,7 @@
     </dialog>
 
     <div class="toast" id="toast" role="status"></div>
+    <div class="loading-bar" id="loadingBar" aria-hidden="true"></div>
     <script src="app.js"></script>
   </body>
 </html>

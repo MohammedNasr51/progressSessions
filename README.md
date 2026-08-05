@@ -14,21 +14,15 @@ A standalone, responsive session progress tracker designed for GitHub Pages.
 - Responsive mobile and desktop layout
 - Separate editor and read-only viewer modes
 
-## Editor mode
+## Public and admin views
 
-The site is read-only by default. To enable editing in your own browser, open the browser developer console on the website and run:
+The normal GitHub Pages URL is the live, read-only viewer. Add `?admin` to that URL to open the admin dashboard:
 
-```js
-localStorage.setItem("boss", "monasr");
-location.reload();
+```text
+https://mohammednasr51.github.io/progressSessions/admin.html
 ```
 
-To return that browser to view-only mode:
-
-```js
-localStorage.removeItem("boss");
-location.reload();
-```
+The admin dashboard asks for the backend `ADMIN_KEY` and stores it only in that browser. Session data is shared through the deployed MongoDB API rather than localStorage.
 
 ## Publish with GitHub Pages
 
