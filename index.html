@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#6c5ce7" />
+    <meta name="description" content="A colorful monthly student session progress tracker." />
+    <title>BrightPath — Session Progress</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="BrightPath home">
+        <span class="brand-mark">B</span>
+        <span><strong>BrightPath</strong><small>Session Progress</small></span>
+      </a>
+      <div class="header-actions">
+        <button class="icon-button" id="exportBtn" title="Export a backup" aria-label="Export a backup">
+          <span>⇩</span>
+        </button>
+        <label class="icon-button" title="Import a backup" aria-label="Import a backup">
+          <span>⇧</span><input id="importInput" type="file" accept="application/json" hidden />
+        </label>
+        <button class="button button-dark" id="addSessionBtn"><span>＋</span> Add session</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div>
+          <p class="eyebrow">STUDENT JOURNEY</p>
+          <h1>Learning, one bright<br /><span>step at a time.</span></h1>
+          <p class="hero-copy">A clear view of every session, every win, and what comes next.</p>
+        </div>
+        <div class="month-control" aria-label="Choose month">
+          <button id="prevMonth" aria-label="Previous month">←</button>
+          <div><small>VIEWING</small><strong id="monthLabel"></strong></div>
+          <button id="nextMonth" aria-label="Next month">→</button>
+        </div>
+      </section>
+
+      <section class="summary-grid" aria-label="Monthly summary">
+        <article class="summary-card summary-purple">
+          <div class="summary-icon">✓</div>
+          <div><small>COMPLETED</small><strong><span id="completedCount">0</span><em> / 8</em></strong></div>
+          <div class="mini-ring" id="miniRing"><span id="percentText">0%</span></div>
+        </article>
+        <article class="summary-card summary-orange">
+          <div class="summary-icon">✦</div>
+          <div><small>GREAT SESSIONS</small><strong id="greatCount">0</strong></div>
+          <p>Positive momentum</p>
+        </article>
+        <article class="quote-card">
+          <span>“</span>
+          <p>Small progress is still progress. Keep going!</p>
+        </article>
+      </section>
+
+      <section class="progress-panel">
+        <div class="panel-heading">
+          <div><p class="eyebrow">MONTHLY ROADMAP</p><h2>Your 8-session journey</h2></div>
+          <div class="legend"><span><i class="dot done"></i> Completed</span><span><i class="dot upcoming"></i> Upcoming</span></div>
+        </div>
+        <div class="progress-track"><div id="progressBar"></div></div>
+        <div class="session-grid" id="sessionGrid"></div>
+      </section>
+
+      <footer>
+        <p>Made with care for meaningful learning.</p>
+        <button id="printBtn">Print monthly report</button>
+      </footer>
+    </main>
+
+    <dialog id="sessionDialog">
+      <form id="sessionForm" method="dialog">
+        <div class="dialog-head">
+          <div><p class="eyebrow">SESSION DETAILS</p><h2 id="dialogTitle">Edit session</h2></div>
+          <button class="close-button" id="closeDialog" type="button" aria-label="Close">×</button>
+        </div>
+        <input type="hidden" id="sessionId" />
+        <div class="field-row">
+          <label><span>Session number</span><input id="sessionNumber" type="number" min="1" required /></label>
+          <label><span>Date</span><input id="sessionDate" type="date" /></label>
+        </div>
+        <label><span>Session title</span><input id="sessionTitle" maxlength="80" placeholder="e.g. Introduction to fractions" required /></label>
+        <label><span>Notes for parents & manager</span><textarea id="sessionNote" rows="5" maxlength="600" placeholder="What did the student learn? What went well? What should we focus on next?"></textarea></label>
+        <div class="status-options">
+          <span>How did it go?</span>
+          <div>
+            <label class="radio-card"><input type="radio" name="status" value="upcoming" /><span>◷ Upcoming</span></label>
+            <label class="radio-card"><input type="radio" name="status" value="completed" /><span>✓ Completed</span></label>
+            <label class="radio-card"><input type="radio" name="status" value="great" /><span>✦ Great</span></label>
+          </div>
+        </div>
+        <div class="dialog-actions">
+          <button class="button button-danger" id="deleteSession" type="button">Delete</button>
+          <span></span>
+          <button class="button button-light" id="cancelDialog" type="button">Cancel</button>
+          <button class="button button-primary" type="submit">Save session</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div class="toast" id="toast" role="status"></div>
+    <script src="app.js"></script>
+  </body>
+</html>
