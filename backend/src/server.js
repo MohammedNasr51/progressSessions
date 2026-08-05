@@ -4,8 +4,8 @@ import { connectDatabase } from "./db.js";
 
 try {
   const config = getConfig();
-  const collection = await connectDatabase(config);
-  const app = createApp({ collection, config });
+  const getCollection = () => connectDatabase(config);
+  const app = createApp({ getCollection, config });
   app.listen(config.port, () => console.log(`BrightPath API listening on port ${config.port}`));
 } catch (error) {
   console.error("Unable to start BrightPath API:", error);

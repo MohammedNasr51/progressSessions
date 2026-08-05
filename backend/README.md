@@ -56,6 +56,19 @@ The API creates the `sessions` collection and indexes automatically after its fi
 5. Set `ALLOWED_ORIGINS` to the exact GitHub Pages origin, for example `https://mohammednasr51.github.io`.
 6. Deploy, then open `/health` on the deployment URL.
 
+### Exact Deno Deploy configuration
+
+The committed `deno.json` now supplies these settings automatically:
+
+- App directory: repository root
+- Framework preset: none
+- Install command: `deno install`
+- Build command: none
+- Runtime mode: dynamic
+- Entrypoint: `src/server.js`
+
+Use the new dashboard at `https://console.deno.com`, not Deno Deploy Classic. Add every environment variable to both **Production** and **Development** contexts so production, branch, and preview timelines can start.
+
 Never put `MONGODB_URI` or `ADMIN_KEY` in Git or in frontend JavaScript.
 
 ## Example request

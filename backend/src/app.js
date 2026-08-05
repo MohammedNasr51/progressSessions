@@ -8,7 +8,7 @@ function safeEqual(left = "", right = "") {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
-export function createApp({ collection, config }) {
+export function createApp({ getCollection, config }) {
   const app = express();
   app.disable("x-powered-by");
   app.use(express.json({ limit: "100kb" }));
@@ -40,6 +40,7 @@ export function createApp({ collection, config }) {
 
   app.get("/api/months/:month/sessions", requireMonth, async (req, res, next) => {
     try {
+      const collection = await getCollection();
       const result = await collection.find({ month: req.params.month }, { projection: { _id: 0, month: 0, updatedAt: 0 } }).sort({ number: 1 }).toArray();
       res.json({ month: req.params.month, sessions: result });
     } catch (error) { next(error); }
@@ -47,6 +48,7 @@ export function createApp({ collection, config }) {
 
   app.put("/api/months/:month/sessions", requireAdmin, requireMonth, async (req, res, next) => {
     try {
+      const collection = await getCollection();
       if (!Array.isArray(req.body?.sessions) || req.body.sessions.length > 100) return res.status(400).json({ error: "sessions must be an array containing at most 100 items" });
       const validationErrors = req.body.sessions.flatMap((session, index) => validateSession(session).map((error) => `sessions[${index}]: ${error}`));
       if (validationErrors.length) return res.status(400).json({ error: "Invalid sessions", details: validationErrors });
@@ -74,6 +76,7 @@ export function createApp({ collection, config }) {
 
   app.put("/api/months/:month/sessions/:id", requireAdmin, requireMonth, async (req, res, next) => {
     try {
+      const collection = await getCollection();
       const candidate = { ...req.body, id: req.params.id };
       const errors = validateSession(candidate);
       if (errors.length) return res.status(400).json({ error: "Invalid session", details: errors });
@@ -85,6 +88,7 @@ export function createApp({ collection, config }) {
 
   app.delete("/api/months/:month/sessions/:id", requireAdmin, requireMonth, async (req, res, next) => {
     try {
+      const collection = await getCollection();
       const result = await collection.deleteOne({ month: req.params.month, id: req.params.id });
       if (!result.deletedCount) return res.status(404).json({ error: "Session not found" });
       res.sendStatus(204);
