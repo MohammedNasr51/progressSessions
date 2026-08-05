@@ -20,6 +20,7 @@
         <span class="brand-mark">B</span>
         <span><strong>BrightPath</strong><small>Session Progress</small></span>
       </a>
+      <span class="view-badge" id="viewBadge">View-only report</span>
       <div class="header-actions">
         <button class="icon-button" id="exportBtn" title="Export a backup" aria-label="Export a backup">
           <span>⇩</span>
@@ -27,7 +28,7 @@
         <label class="icon-button" title="Import a backup" aria-label="Import a backup">
           <span>⇧</span><input id="importInput" type="file" accept="application/json" hidden />
         </label>
-        <button class="button button-dark" id="addSessionBtn"><span>＋</span> Add session</button>
+        <button class="button button-dark edit-only" id="addSessionBtn"><span>＋</span> Add session</button>
       </div>
     </header>
 
@@ -100,7 +101,7 @@
             <label class="radio-card"><input type="radio" name="status" value="great" /><span>✦ Great</span></label>
           </div>
         </div>
-        <div class="dialog-actions">
+        <div class="dialog-actions edit-only">
           <button class="button button-danger" id="deleteSession" type="button">Delete</button>
           <span></span>
           <button class="button button-light" id="cancelDialog" type="button">Cancel</button>

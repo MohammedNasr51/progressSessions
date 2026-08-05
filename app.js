@@ -1,11 +1,15 @@
 const STORAGE_KEY = "brightpath-session-progress-v1";
 const DEFAULT_COUNT = 8;
+const IS_EDITOR = localStorage.getItem("boss") === "monasr";
 
 const state = {
   currentMonth: monthKey(new Date()),
   data: loadData(),
   editingId: null
 };
+
+document.body.classList.toggle("view-mode", !IS_EDITOR);
+document.body.classList.toggle("edit-mode", IS_EDITOR);
 
 const els = {
   monthLabel: document.querySelector("#monthLabel"), sessionGrid: document.querySelector("#sessionGrid"),
@@ -73,9 +77,10 @@ function sessionCard(session) {
 function openEditor(id = null) {
   const sessions = getSessions();
   let session = sessions.find(item => item.id === id);
+  if (!IS_EDITOR && !session) return;
   if (!session) session = { id: "", number: sessions.length + 1, title: "", date: "", note: "", status: "upcoming" };
   state.editingId = session.id || null;
-  document.querySelector("#dialogTitle").textContent = state.editingId ? `Session ${session.number}` : "Add a session";
+  document.querySelector("#dialogTitle").textContent = IS_EDITOR ? (state.editingId ? `Session ${session.number}` : "Add a session") : `Session ${session.number} details`;
   document.querySelector("#sessionId").value = session.id;
   document.querySelector("#sessionNumber").value = session.number;
   document.querySelector("#sessionTitle").value = session.title;
@@ -84,11 +89,13 @@ function openEditor(id = null) {
   const radio = document.querySelector(`input[name="status"][value="${session.status}"]`);
   if (radio) radio.checked = true;
   els.deleteBtn.style.visibility = state.editingId ? "visible" : "hidden";
+  els.form.querySelectorAll("input, textarea").forEach(field => field.disabled = !IS_EDITOR);
   els.dialog.showModal();
 }
 
 els.form.addEventListener("submit", event => {
   event.preventDefault();
+  if (!IS_EDITOR) return;
   const sessions = getSessions();
   const record = {
     id: state.editingId || uid(),
@@ -104,6 +111,7 @@ els.form.addEventListener("submit", event => {
 });
 
 els.deleteBtn.addEventListener("click", () => {
+  if (!IS_EDITOR) return;
   if (!state.editingId || !confirm("Delete this session?")) return;
   state.data[state.currentMonth] = getSessions().filter(item => item.id !== state.editingId);
   saveData(); render(); els.dialog.close(); showToast("Session deleted");
@@ -123,10 +131,12 @@ document.querySelector("#printBtn").addEventListener("click", () => window.print
 document.addEventListener("keydown", event => { if (event.key === "Enter" && document.activeElement?.classList.contains("session-card")) openEditor(document.activeElement.dataset.id); });
 
 document.querySelector("#exportBtn").addEventListener("click", () => {
+  if (!IS_EDITOR) return;
   const blob = new Blob([JSON.stringify(state.data, null, 2)], { type: "application/json" });
   const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `brightpath-backup-${monthKey(new Date())}.json`; link.click(); URL.revokeObjectURL(link.href); showToast("Backup exported");
 });
 document.querySelector("#importInput").addEventListener("change", async event => {
+  if (!IS_EDITOR) return;
   const file = event.target.files[0]; if (!file) return;
   try { const imported = JSON.parse(await file.text()); if (!imported || Array.isArray(imported) || typeof imported !== "object") throw new Error(); state.data = imported; saveData(); render(); showToast("Backup imported"); }
   catch { alert("That file is not a valid BrightPath backup."); }
