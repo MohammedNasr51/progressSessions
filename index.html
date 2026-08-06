@@ -111,6 +111,25 @@
             <label class="radio-card"><input type="radio" name="status" value="great" /><span>✦ Great</span></label>
           </div>
         </div>
+        <section class="homework-panel" id="homeworkPanel">
+          <div class="resource-heading">
+            <div><span>LEARNING RESOURCES</span><h3>Homework & recordings</h3></div>
+            <span class="resource-count" id="resourceCount">No resources</span>
+          </div>
+          <div class="homework-admin edit-only">
+            <label><span>Homework instructions</span><textarea id="homeworkText" rows="3" maxlength="2000" placeholder="Write the homework steps, questions, or practice plan…"></textarea></label>
+            <div class="recording-fields">
+              <label><span>Recording link 1</span><input id="recordingLink1" type="url" placeholder="https://drive.google.com/…" /></label>
+              <label><span>Recording link 2</span><input id="recordingLink2" type="url" placeholder="https://drive.google.com/…" /></label>
+            </div>
+            <label class="file-picker"><input id="homeworkFile" type="file" accept="application/pdf,text/plain,.pdf,.txt" /><span><strong>＋ Add homework file</strong><small>PDF or TXT · maximum 10 MB</small></span></label>
+          </div>
+          <div class="homework-view view-only">
+            <p id="viewerHomeworkText"></p>
+            <div class="recording-links" id="recordingLinks"></div>
+          </div>
+          <div class="attachments-list" id="attachmentsList"></div>
+        </section>
         <section class="comments-panel" id="commentsPanel">
           <div class="comments-heading">
             <div><span>SESSION CONVERSATION</span><h3>Comments & feedback</h3></div>

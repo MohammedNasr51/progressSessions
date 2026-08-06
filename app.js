@@ -83,7 +83,7 @@ function getAdminKey({ promptIfMissing = true } = {}) {
 
 async function apiRequest(path, options = {}) {
   const headers = { Accept: "application/json", ...(options.headers || {}) };
-  if (options.body) headers["Content-Type"] = "application/json";
+  if (options.body && !(options.body instanceof FormData)) headers["Content-Type"] = "application/json";
   if (options.admin) {
     const key = getAdminKey();
     if (!key) throw new Error("Admin key is required");
@@ -153,6 +153,7 @@ function sessionCard(session) {
     <h3 class="${session.title ? "" : "empty-title"}">${escapeHTML(title)}</h3>
     <p class="session-date">${escapeHTML(formatDate(session.date))}</p>
     ${session.note ? `<p class="note-preview">${escapeHTML(session.note)}</p>` : ""}
+    ${(session.homeworkText || session.attachments?.length || session.recordingLinks?.length) ? `<div class="resource-chip">⌁ Resources available</div>` : ""}
     <div class="card-footer"><span>${action}</span><span>→</span></div>
   </article>`;
 }
@@ -173,6 +174,10 @@ function openSession(id = null) {
   document.querySelector("#sessionTitle").value = session.title;
   document.querySelector("#sessionDate").value = session.date;
   document.querySelector("#sessionNote").value = session.note;
+  document.querySelector("#homeworkText").value = session.homeworkText || "";
+  document.querySelector("#recordingLink1").value = session.recordingLinks?.[0] || "";
+  document.querySelector("#recordingLink2").value = session.recordingLinks?.[1] || "";
+  document.querySelector("#homeworkFile").value = "";
   const radio = document.querySelector(`input[name="status"][value="${session.status}"]`);
   if (radio) radio.checked = true;
   els.deleteBtn.style.visibility = IS_ADMIN && state.editingId ? "visible" : "hidden";
@@ -182,7 +187,26 @@ function openSession(id = null) {
   document.querySelector("#commentMessage").disabled = false;
   document.querySelector("#commentWebsite").disabled = false;
   renderComments(session);
+  renderHomework(session);
   els.dialog.showModal();
+}
+
+function renderHomework(session) {
+  const homeworkText = session.homeworkText || "";
+  const links = Array.isArray(session.recordingLinks) ? session.recordingLinks : [];
+  const attachments = Array.isArray(session.attachments) ? session.attachments : [];
+  const count = (homeworkText ? 1 : 0) + links.length + attachments.length;
+  document.querySelector("#resourceCount").textContent = count ? `${count} resource${count === 1 ? "" : "s"}` : "No resources";
+  const viewerText = document.querySelector("#viewerHomeworkText");
+  viewerText.textContent = homeworkText || "No written homework was added for this session.";
+  viewerText.classList.toggle("empty", !homeworkText);
+  document.querySelector("#recordingLinks").innerHTML = links.map((link, index) => `<a href="${escapeHTML(link)}" target="_blank" rel="noopener noreferrer"><span>▶</span> Meeting recording ${index + 1}</a>`).join("");
+  document.querySelector("#attachmentsList").innerHTML = attachments.map((attachment) => {
+    const url = `${API_BASE}/api/months/${state.currentMonth}/sessions/${encodeURIComponent(session.id)}/attachments/${encodeURIComponent(attachment.id)}`;
+    const type = attachment.mimeType === "application/pdf" ? "PDF" : "TXT";
+    const size = attachment.size < 1024 * 1024 ? `${Math.max(1, Math.round(attachment.size / 1024))} KB` : `${(attachment.size / 1024 / 1024).toFixed(1)} MB`;
+    return `<article class="attachment-item"><span class="file-type">${type}</span><div><strong>${escapeHTML(attachment.name)}</strong><small>${size}</small></div><a href="${url}" target="_blank" rel="noopener" aria-label="Open ${escapeHTML(attachment.name)}">Open ↗</a>${IS_ADMIN ? `<button type="button" class="delete-attachment" data-file-id="${escapeHTML(attachment.id)}">×</button>` : ""}</article>`;
+  }).join("");
 }
 
 function formatCommentDate(value) {
@@ -214,10 +238,18 @@ els.form.addEventListener("submit", async (event) => {
     date: document.querySelector("#sessionDate").value,
     note: document.querySelector("#sessionNote").value.trim(),
     status: document.querySelector('input[name="status"]:checked')?.value || "upcoming",
+    homeworkText: document.querySelector("#homeworkText").value.trim(),
+    recordingLinks: [document.querySelector("#recordingLink1").value.trim(), document.querySelector("#recordingLink2").value.trim()].filter(Boolean),
   };
   setLoading(true);
   try {
     await apiRequest(`/api/months/${state.currentMonth}/sessions/${encodeURIComponent(record.id)}`, { method: "PUT", admin: true, body: JSON.stringify(record) });
+    const selectedFile = document.querySelector("#homeworkFile").files[0];
+    if (selectedFile) {
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+      await apiRequest(`/api/months/${state.currentMonth}/sessions/${encodeURIComponent(record.id)}/attachments`, { method: "POST", admin: true, body: formData });
+    }
     els.dialog.close();
     await loadMonth();
     showToast("Session saved to the shared database");
@@ -310,6 +342,23 @@ document.querySelector("#commentsList").addEventListener("click", async (event) 
     const refreshed = state.sessions.find((session) => session.id === state.viewingId);
     if (refreshed) renderComments(refreshed);
     showToast("Comment deleted");
+  } catch (error) {
+    showToast(error.message, true);
+  } finally {
+    setLoading(false);
+  }
+});
+
+document.querySelector("#attachmentsList").addEventListener("click", async (event) => {
+  const button = event.target.closest(".delete-attachment");
+  if (!button || !IS_ADMIN || !state.viewingId || !confirm("Delete this homework file?")) return;
+  setLoading(true);
+  try {
+    await apiRequest(`/api/months/${state.currentMonth}/sessions/${encodeURIComponent(state.viewingId)}/attachments/${encodeURIComponent(button.dataset.fileId)}`, { method: "DELETE", admin: true });
+    await loadMonth();
+    const refreshed = state.sessions.find((session) => session.id === state.viewingId);
+    if (refreshed) renderHomework(refreshed);
+    showToast("Homework file deleted");
   } catch (error) {
     showToast(error.message, true);
   } finally {
