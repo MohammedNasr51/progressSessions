@@ -42,7 +42,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, [tabindex]:fo
 .brand strong { font: 800 16px Manrope; letter-spacing: -.3px; }
 .brand small { color: var(--muted); font-size: 11px; margin-top: 1px; }
 .header-actions { display: flex; gap: 9px; align-items: center; }
-.theme-toggle { flex: 0 0 auto; width: 42px; height: 42px; margin-left: auto; border: 1px solid var(--line); border-radius: 13px; display: grid; place-items: center; color: var(--ink); background: var(--card); box-shadow: 0 5px 14px rgba(59,45,116,.07); transition: transform .25s, border-color .25s, background .25s; }
+.theme-toggle { flex: 0 0 auto; width: 42px; height: 42px; margin-left: auto; margin-right:10px; border: 1px solid var(--line); border-radius: 13px; display: grid; place-items: center; color: var(--ink); background: var(--card); box-shadow: 0 5px 14px rgba(59,45,116,.07); transition: transform .25s, border-color .25s, background .25s; }
 .theme-toggle:hover { transform: translateY(-2px) rotate(5deg); border-color: var(--purple); }
 .theme-icon { width: 17px; height: 17px; border: 2px solid var(--purple); border-radius: 50%; position: relative; background: var(--orange); box-shadow: 0 0 0 3px var(--purple-pale); transition: .3s ease; }
 .theme-icon::after { content: ""; position: absolute; width: 14px; height: 14px; top: -5px; right: -7px; border-radius: 50%; background: var(--card); transform: scale(0); transition: .3s ease; }
@@ -186,7 +186,7 @@ dialog form > label { display: block; margin-top: 17px; }
 .resource-count { padding: 5px 8px; border-radius: 99px; color: #b0611d; background: var(--orange-pale); font-size: 9px; font-weight: 800; }
 .homework-admin > label { display: block; margin-bottom: 11px; }
 .recording-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.file-picker { cursor: pointer; }
+.file-picker { cursor: pointer; margin-top: 15px;}
 .file-picker input { position: absolute; opacity: 0; width: 1px !important; height: 1px !important; min-height: 0 !important; }
 .file-picker > span { min-height: 60px; display: flex !important; align-items: center; justify-content: center; flex-direction: column; border: 1px dashed #bdb5e4; border-radius: 14px; color: var(--purple-dark); background: rgba(255,255,255,.62); transition: .2s; }
 .file-picker:hover > span { border-color: var(--purple); background: white; }
