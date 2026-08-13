@@ -175,8 +175,7 @@ function openSession(id = null) {
   document.querySelector("#sessionDate").value = session.date;
   document.querySelector("#sessionNote").value = session.note;
   document.querySelector("#homeworkText").value = session.homeworkText || "";
-  document.querySelector("#recordingLink1").value = session.recordingLinks?.[0] || "";
-  document.querySelector("#recordingLink2").value = session.recordingLinks?.[1] || "";
+  renderRecordingFields(session.recordingLinks);
   document.querySelector("#homeworkFile").value = "";
   const radio = document.querySelector(`input[name="status"][value="${session.status}"]`);
   if (radio) radio.checked = true;
@@ -190,6 +189,25 @@ function openSession(id = null) {
   renderHomework(session);
   els.dialog.showModal();
 }
+
+function renderRecordingFields(recordingLinks = [""]) {
+  const links = recordingLinks?.length ? recordingLinks : [""];
+  document.querySelector("#recordingFields").innerHTML = links.map((link, index) => `<div class="recording-field-row"><label><span>Recording link ${index + 1}</span><input class="recording-link-input" type="url" value="${escapeHTML(link)}" placeholder="https://drive.google.com/…" ${IS_ADMIN ? "" : "disabled"} /></label><button class="remove-recording-button" type="button" aria-label="Remove recording ${index + 1}" ${links.length === 1 || !IS_ADMIN ? "disabled" : ""}>×</button></div>`).join("");
+}
+
+document.querySelector("#addRecordingLink").addEventListener("click", () => {
+  const links = [...document.querySelectorAll(".recording-link-input")].map((input) => input.value);
+  renderRecordingFields([...links, ""]);
+});
+
+document.querySelector("#recordingFields").addEventListener("click", (event) => {
+  const button = event.target.closest(".remove-recording-button");
+  if (!button || button.disabled) return;
+  const rows = [...document.querySelectorAll(".recording-field-row")];
+  const index = rows.indexOf(button.closest(".recording-field-row"));
+  const links = [...document.querySelectorAll(".recording-link-input")].map((input) => input.value).filter((_, itemIndex) => itemIndex !== index);
+  renderRecordingFields(links);
+});
 
 function renderHomework(session) {
   const homeworkText = session.homeworkText || "";
@@ -239,7 +257,7 @@ els.form.addEventListener("submit", async (event) => {
     note: document.querySelector("#sessionNote").value.trim(),
     status: document.querySelector('input[name="status"]:checked')?.value || "upcoming",
     homeworkText: document.querySelector("#homeworkText").value.trim(),
-    recordingLinks: [document.querySelector("#recordingLink1").value.trim(), document.querySelector("#recordingLink2").value.trim()].filter(Boolean),
+    recordingLinks: [...document.querySelectorAll(".recording-link-input")].map((input) => input.value.trim()).filter(Boolean),
   };
   setLoading(true);
   try {

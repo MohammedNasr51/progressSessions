@@ -118,10 +118,8 @@
           </div>
           <div class="homework-admin edit-only">
             <label><span>Homework instructions</span><textarea id="homeworkText" rows="3" maxlength="2000" placeholder="Write the homework steps, questions, or practice plan…"></textarea></label>
-            <div class="recording-fields">
-              <label><span>Recording link 1</span><input id="recordingLink1" type="url" placeholder="https://drive.google.com/…" /></label>
-              <label><span>Recording link 2</span><input id="recordingLink2" type="url" placeholder="https://drive.google.com/…" /></label>
-            </div>
+            <div class="recording-fields" id="recordingFields"></div>
+            <button class="add-recording-button" id="addRecordingLink" type="button">＋ Add another recording</button>
             <label class="file-picker"><input id="homeworkFile" type="file" accept="application/pdf,text/plain,.pdf,.txt" /><span><strong>＋ Add homework file</strong><small>PDF or TXT · maximum 10 MB</small></span></label>
           </div>
           <div class="homework-view view-only">
