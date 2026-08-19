@@ -221,9 +221,12 @@ function renderHomework(session) {
   document.querySelector("#recordingLinks").innerHTML = links.map((link, index) => `<a href="${escapeHTML(link)}" target="_blank" rel="noopener noreferrer"><span>▶</span> Meeting recording ${index + 1}</a>`).join("");
   document.querySelector("#attachmentsList").innerHTML = attachments.map((attachment) => {
     const url = `${API_BASE}/api/months/${state.currentMonth}/sessions/${encodeURIComponent(session.id)}/attachments/${encodeURIComponent(attachment.id)}`;
-    const type = attachment.mimeType === "application/pdf" ? "PDF" : "TXT";
+    const extension = attachment.name?.split(".").pop()?.toUpperCase();
+    const knownTypes = new Set(["PDF", "TXT", "ZIP", "RAR", "7Z"]);
+    const type = knownTypes.has(extension) ? extension : "FILE";
     const size = attachment.size < 1024 * 1024 ? `${Math.max(1, Math.round(attachment.size / 1024))} KB` : `${(attachment.size / 1024 / 1024).toFixed(1)} MB`;
-    return `<article class="attachment-item"><span class="file-type">${type}</span><div><strong>${escapeHTML(attachment.name)}</strong><small>${size}</small></div><a href="${url}" target="_blank" rel="noopener" aria-label="Open ${escapeHTML(attachment.name)}">Open ↗</a>${IS_ADMIN ? `<button type="button" class="delete-attachment" data-file-id="${escapeHTML(attachment.id)}">×</button>` : ""}</article>`;
+    const isPreviewable = type === "PDF" || type === "TXT";
+    return `<article class="attachment-item"><span class="file-type">${type}</span><div><strong>${escapeHTML(attachment.name)}</strong><small>${size}</small></div><a href="${url}" target="_blank" rel="noopener" aria-label="${isPreviewable ? "Open" : "Download"} ${escapeHTML(attachment.name)}">${isPreviewable ? "Open ↗" : "Download ↓"}</a>${IS_ADMIN ? `<button type="button" class="delete-attachment" data-file-id="${escapeHTML(attachment.id)}">×</button>` : ""}</article>`;
   }).join("");
 }
 
